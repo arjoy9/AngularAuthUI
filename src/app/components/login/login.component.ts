@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import ValidateForn from 'src/app/helpers/validateform';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,7 +15,9 @@ export class LoginComponent implements OnInit {
   eyeIcon:string ="fa-eye-slash";
 
   loginForm!: FormGroup;
-  constructor(private fb: FormBuilder){}
+  constructor(private fb: FormBuilder, 
+    private service:AuthService, 
+    private router:Router){}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -30,7 +34,23 @@ export class LoginComponent implements OnInit {
 
   onSubmit(){
     if (this.loginForm.valid) {
-      console.warn(this.loginForm.value);
+      // console.warn(this.loginForm.value);
+      // this.service.login(this.loginForm.value).subscribe((result)=>{
+      //   if (result) {         
+      //   }
+      // })
+      this.service.login(this.loginForm.value)
+      .subscribe({
+        next:(result=>{
+          alert(result.message);
+          this.loginForm.reset();
+          this.router.navigate(['dashboard']);
+        }), 
+        
+        error:(err=>{
+          alert(err?.err.message);
+        })
+      })
       
     }
     else{

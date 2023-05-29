@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import ValidateForn from 'src/app/helpers/validateform';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -15,7 +17,10 @@ export class SignupComponent implements OnInit {
 
   signupForm!: FormGroup;
 
-  constructor(private fb: FormBuilder){}
+  constructor(private fb: FormBuilder, 
+    private service:AuthService, 
+    private router:Router){}
+
   ngOnInit(): void {
     this.signupForm = this.fb.group({
       firstname: ['', Validators.required],
@@ -33,14 +38,26 @@ export class SignupComponent implements OnInit {
      this.isText ? this.type= "text" : this.type="password";
   }
 
-  
   onSubmit(){
     if (this.signupForm.valid) {
-      console.warn(this.signupForm.value);
-      
+      // console.warn(this.signupForm.value);
+      this.service.signUp(this.signupForm.value)
+      .subscribe({
+        next:(result=>{
+          // console.warn(result);          
+          alert(result.message);
+          this.signupForm.reset();
+          this.router.navigate(['login']);
+        }), 
+
+        error:(err=>{
+           alert(err?.err.message);
+          // console.warn("something is wrong");       
+        })
+      })     
     }
     else{
-      console.warn("Form is not valid");
+      // console.warn("Form is not valid");
       ValidateForn.validateAllformFileds(this.signupForm);
       alert("your form is invalid...");
       
