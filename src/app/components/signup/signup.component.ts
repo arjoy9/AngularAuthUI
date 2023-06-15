@@ -3,6 +3,8 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Router } from '@angular/router';
 import ValidateForn from 'src/app/helpers/validateform';
 import { AuthService } from 'src/app/services/auth.service';
+import { NgToastService } from 'ng-angular-popup';
+import ValidateForm from 'src/app/helpers/validateform';
 
 @Component({
   selector: 'app-signup',
@@ -11,56 +13,56 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class SignupComponent implements OnInit {
 
-  type:string="password";
-  isText:boolean =false;
-  eyeIcon:string ="fa-eye-slash";
+  public signUpForm!: FormGroup;
+  type: string = 'password';
+  isText: boolean = false;
+  eyeIcon:string = "fa-eye-slash"
 
-  signupForm!: FormGroup;
+  constructor(private fb : FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+    private toast:NgToastService) { }
 
-  constructor(private fb: FormBuilder, 
-    private service:AuthService, 
-    private router:Router){}
-
-  ngOnInit(): void {
-    this.signupForm = this.fb.group({
-      firstname: ['', Validators.required],
-      lastname: ['', Validators.required],
-      email: ['', Validators.required],
-      username: ['', Validators.required],
-      password: ['', Validators.required]
-    })   
+  ngOnInit() {
+    this.signUpForm = this.fb.group({
+      firstName:['', Validators.required],
+      lastName:['', Validators.required],
+      userName:['', Validators.required],
+      email:['', Validators.required],
+      password:['', Validators.required]
+    })
   }
 
-  hideShow(){
+  hideShowPass(){
     this.isText = !this.isText;
-    // console.warn(this.isText);  
-     this.isText ? this.eyeIcon ="fa-eye": this.eyeIcon="fa-eye-slash";
-     this.isText ? this.type= "text" : this.type="password";
+    this.isText ? this.eyeIcon = 'fa-eye' : this.eyeIcon = 'fa-eye-slash'
+    this.isText ? this.type = 'text' : this.type = 'password'
   }
 
-  onSubmit(){
-    if (this.signupForm.valid) {
-      // console.warn(this.signupForm.value);
-      this.service.signUp(this.signupForm.value)
+  onSubmit() {
+    if (this.signUpForm.valid) {
+      console.log(this.signUpForm.value);
+      let signUpObj = {
+        ...this.signUpForm.value,
+        role:'',
+        token:''
+      }
+      this.auth.signUp(signUpObj)
       .subscribe({
-        next:(result=>{
-          // console.warn(result);          
-          alert(result.message);
-          this.signupForm.reset();
+        next:(res=>{
+          console.log(res.message);
+          this.signUpForm.reset();
+          this.toast.success({detail:"SUCCESS", summary:res.message, duration: 5000});
           this.router.navigate(['login']);
-        }), 
-
+          // alert(res.message)
+        }),
         error:(err=>{
-           alert(err?.err.message);
-          // console.warn("something is wrong");       
+          alert(err?.error.message)
         })
-      })     
-    }
-    else{
-      // console.warn("Form is not valid");
-      ValidateForn.validateAllformFileds(this.signupForm);
-      alert("your form is invalid...");
-      
+      })
+    } else {
+      ValidateForm.validateAllFormFields(this.signUpForm); //{7}
     }
   }
+
 }
